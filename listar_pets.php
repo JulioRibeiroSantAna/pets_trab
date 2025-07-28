@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Lista de Espécies</title>
+    <title>Lista de Pets</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -70,44 +70,49 @@
         .voltar:hover {
             text-decoration: underline;
         }
-        .sem-registros {
-            padding: 15px;
-            text-align: center;
-            color: #666;
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
-    <h2>Lista de Espécies</h2>
-    <a href="cadastrar_especie.php" class="btn-novo">Nova Espécie</a>
+    <h2>Lista de Pets</h2>
+    <a href="cadastrar_pet.php" class="btn-novo">Novo Pet</a>
     
     <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Nome</th>
+                <th>Espécie</th>
+                <th>Nascimento</th>
+                <th>Gênero</th>
                 <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $sql = "SELECT * FROM especies ORDER BY nome";
+            $sql = "SELECT p.*, e.nome as especie_nome 
+                    FROM pets p 
+                    JOIN especies e ON p.id_especie = e.id_especie 
+                    ORDER BY p.nome";
             $result = mysqli_query($con, $sql);
             
             if ($result && mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
+                    $data_nasc = $row['nascimento'] ? date('d/m/Y', strtotime($row['nascimento'])) : 'Não informado';
+                    
                     echo "<tr>
-                        <td>{$row['id_especie']}</td>
+                        <td>{$row['id_pet']}</td>
                         <td>{$row['nome']}</td>
+                        <td>{$row['especie_nome']}</td>
+                        <td>{$data_nasc}</td>
+                        <td>{$row['genero']}</td>
                         <td class='acoes'>
-                            <a href='editar_especie.php?id={$row['id_especie']}' class='editar'>Editar</a>
-                            <a href='excluir_especie.php?id={$row['id_especie']}' class='excluir' onclick='return confirm(\"Tem certeza que deseja excluir esta espécie?\")'>Excluir</a>
+                            <a href='editar_pet.php?id={$row['id_pet']}' class='editar'>Editar</a>
+                            <a href='excluir_pet.php?id={$row['id_pet']}' class='excluir' onclick='return confirm(\"Tem certeza que deseja excluir este pet?\")'>Excluir</a>
                         </td>
                     </tr>";
                 }
             } else {
-                echo "<tr><td colspan='3' class='sem-registros'>Nenhuma espécie cadastrada</td></tr>";
+                echo "<tr><td colspan='6'>Nenhum pet cadastrado</td></tr>";
             }
             ?>
         </tbody>
