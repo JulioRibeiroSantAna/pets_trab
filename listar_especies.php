@@ -1,117 +1,74 @@
-<?php include 'conexao.php'; ?>
+<?php 
+include 'conexao.php'; 
+include 'verificar_sessao.php';
+?>
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <title>Lista de Espécies</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        h2 {
-            color: #333;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 10px;
-        }
-        .btn-novo {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .btn-novo:hover {
-            background-color: #45a049;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .acoes a {
-            display: inline-block;
-            padding: 5px 10px;
-            text-decoration: none;
-            border-radius: 3px;
-            margin-right: 5px;
-        }
-        .editar {
-            background-color: #2196F3;
-            color: white;
-        }
-        .excluir {
-            background-color: #f44336;
-            color: white;
-        }
-        .voltar {
-            display: inline-block;
-            margin-top: 20px;
-            color: #333;
-            text-decoration: none;
-        }
-        .voltar:hover {
-            text-decoration: underline;
-        }
-        .sem-registros {
-            padding: 15px;
-            text-align: center;
-            color: #666;
-            font-style: italic;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Lista de Espécies</h2>
-    <a href="cadastrar_especie.php" class="btn-novo">Nova Espécie</a>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            $sql = "SELECT * FROM especies ORDER BY nome";
-            $result = mysqli_query($con, $sql);
-            
-            if ($result && mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo "<tr>
-                        <td>{$row['id_especie']}</td>
-                        <td>{$row['nome']}</td>
-                        <td class='acoes'>
-                            <a href='editar_especie.php?id={$row['id_especie']}' class='editar'>Editar</a>
-                            <a href='excluir_especie.php?id={$row['id_especie']}' class='excluir' onclick='return confirm(\"Tem certeza que deseja excluir esta espécie?\")'>Excluir</a>
-                        </td>
-                    </tr>";
-                }
-            } else {
-                echo "<tr><td colspan='3' class='sem-registros'>Nenhuma espécie cadastrada</td></tr>";
+    <div class="container">
+        <h1 class="page-title">Lista de Espécies</h1>
+
+        <?php
+        if (isset($_GET['sucesso']) && $_GET['sucesso'] == 'exclusao') {
+            echo '<div class="alert alert-success">✅ Espécie excluída com sucesso!</div>';
+        }
+        if (isset($_GET['erro'])) {
+            $msg = '';
+            if ($_GET['erro'] == 'dependencias') {
+                $msg = '⚠️ Não é possível excluir: existem pets vinculados a esta espécie.';
+            } elseif ($_GET['erro'] == 'exclusao') {
+                $msg = '❌ Erro ao excluir espécie. ' . (isset($_GET['msg']) ? htmlspecialchars($_GET['msg']) : '');
             }
-            ?>
-        </tbody>
-    </table>
-    <a href="index.php" class="voltar">← Voltar ao início</a>
+            echo '<div class="alert alert-danger">'.$msg.'</div>';
+        }
+        ?>
+
+        <div class="actions-bar">
+            <a href="cadastrar_especie.php" class="btn btn-primary">+ Nova Espécie</a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome da Espécie</th>
+                            <th class="acoes-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $sql = "SELECT * FROM especies ORDER BY nome";
+                        $result = mysqli_query($con, $sql);
+
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                echo "<tr>
+                                    <td>{$row['nome']}</td>
+                                    <td class='botoes-direita'>
+                                        <a href='editar_especie.php?id={$row['id_especie']}' class='btn btn-secondary btn-sm'>Editar</a>
+                                        <a href='delete.php?tabela=especies&id={$row['id_especie']}' class='btn btn-danger btn-sm' onclick='return confirm(\"Tem certeza que deseja excluir esta espécie?\")'>Excluir</a>
+                                    </td>
+                                </tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='2' class='text-center'>Nenhuma espécie cadastrada</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+
+                <div class="text-center" style="margin-top: 20px;">
+                    <a href="principal.php" class="link">← Voltar ao Início</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+<?php mysqli_close($con); ?>

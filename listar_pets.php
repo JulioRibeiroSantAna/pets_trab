@@ -1,122 +1,87 @@
-<?php include 'conexao.php'; ?>
+<?php 
+include 'conexao.php'; 
+include 'verificar_sessao.php';
+?>
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8">
     <title>Lista de Pets</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        h2 {
-            color: #333;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 10px;
-        }
-        .btn-novo {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .btn-novo:hover {
-            background-color: #45a049;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .acoes a {
-            display: inline-block;
-            padding: 5px 10px;
-            text-decoration: none;
-            border-radius: 3px;
-            margin-right: 5px;
-        }
-        .editar {
-            background-color: #2196F3;
-            color: white;
-        }
-        .excluir {
-            background-color: #f44336;
-            color: white;
-        }
-        .voltar {
-            display: inline-block;
-            margin-top: 20px;
-            color: #333;
-            text-decoration: none;
-        }
-        .voltar:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Lista de Pets</h2>
-    <a href="cadastrar_pet.php" class="btn-novo">Novo Pet</a>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nome</th>
-                <th>Espécie</th>
-                <th>Nascimento</th>
-                <th>Gênero</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            $sql = "SELECT p.*, e.nome as especie_nome 
-                    FROM pets p 
-                    JOIN especies e ON p.id_especie = e.id_especie 
-                    ORDER BY p.nome";
-            $result = mysqli_query($con, $sql);
-            
-            if ($result && mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    $data_nasc = $row['nascimento'] ? date('d/m/Y', strtotime($row['nascimento'])) : 'Não informado';
-                    
-                    echo "<tr>
-                        <td>{$row['id_pet']}</td>
-                        <td>{$row['nome']}</td>
-                        <td>{$row['especie_nome']}</td>
-                        <td>{$data_nasc}</td>
-                        <td>{$row['genero']}</td>
-                        <td class='acoes'>
-                            <a href='editar_pet.php?id={$row['id_pet']}' class='editar'>Editar</a>
-                            <a href='excluir_pet.php?id={$row['id_pet']}' class='excluir' onclick='return confirm(\"Tem certeza que deseja excluir este pet?\")'>Excluir</a>
-                        </td>
-                    </tr>";
-                }
-            } else {
-                echo "<tr><td colspan='6'>Nenhum pet cadastrado</td></tr>";
+    <div class="container">
+        <h1 class="page-title">Lista de Pets</h1>
+
+        <?php
+        if (isset($_GET['sucesso'])) {
+            if ($_GET['sucesso'] == 'exclusao') {
+                echo '<div class="alert alert-success">✅ Pet excluído com sucesso!</div>';
+            } elseif ($_GET['sucesso'] == 'edicao') {
+                echo '<div class="alert alert-success">✅ Pet atualizado com sucesso!</div>';
             }
-            ?>
-        </tbody>
-    </table>
-    <a href="index.php" class="voltar">← Voltar ao início</a>
+        }
+        if (isset($_GET['erro'])) {
+            $msg = 'Erro ao excluir pet.' . (isset($_GET['msg']) ? ' ' . htmlspecialchars($_GET['msg']) : '');
+            echo '<div class="alert alert-danger">'.$msg.'</div>';
+        }
+        ?>
+
+        <div class="actions-bar">
+            <a href="cadastrar_pet.php" class="btn btn-primary">+ Novo Pet</a>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Espécie</th>
+                            <th>Nascimento</th>
+                            <th>Prontuário</th>
+                            <th>Gênero</th>
+                            <th class="acoes-col">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $sql = "SELECT p.*, e.nome as especie_nome 
+                                FROM pets p 
+                                JOIN especies e ON p.id_especie = e.id_especie 
+                                ORDER BY p.nome";
+                        $result = mysqli_query($con, $sql);
+
+                        if ($result && mysqli_num_rows($result) > 0) {
+                            while ($row = mysqli_fetch_assoc($result)) {
+                                $data_nasc = $row['nascimento'] ? date('d/m/Y', strtotime($row['nascimento'])) : 'Não informado';
+                                $prontuario = $row['prontuario'] ? $row['prontuario'] : 'Nenhum prontuário cadastrado';
+
+                                echo "<tr>
+                                    <td>{$row['nome']}</td>
+                                    <td>{$row['especie_nome']}</td>
+                                    <td>{$data_nasc}</td>
+                                    <td>{$prontuario}</td>
+                                    <td>{$row['genero']}</td>
+                                    <td class='botoes-direita'>
+                                        <a href='editar_pet.php?id={$row['id_pet']}' class='btn btn-secondary btn-sm'>Editar</a>
+                                        <a href='delete.php?tabela=pets&id={$row['id_pet']}' class='btn btn-danger btn-sm' onclick='return confirm(\"Tem certeza que deseja excluir este pet?\")'>Excluir</a>
+                                    </td>
+                                </tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='6' class='text-center'>Nenhum pet cadastrado</td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
+
+                <div class="text-center" style="margin-top: 20px;">
+                    <a href="principal.php" class="link">← Voltar ao Início</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+<?php mysqli_close($con); ?>
