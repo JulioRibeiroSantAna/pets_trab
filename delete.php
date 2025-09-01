@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
+
 include 'verificar_sessao.php';
 
-declare(strict_types=1);
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
@@ -38,7 +39,7 @@ if ($tabela === 'especies') {
     $stmt->execute();
     $stmt->bind_result($qtd);
     $stmt->fetch();
-    $stmt->close();
+    $stmt->close(); 
 
     if ($qtd > 0) {
         go($redirect . '?erro=dependencias');
